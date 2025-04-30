@@ -1,5 +1,6 @@
 fastapi
 mcp
+mcp[cli]
 uvicorn
 langgraph
 uuid

@@ -25,6 +25,6 @@ def book_cab(pickup: str, drop: str, date: str) -> dict:
         "details": f"Cab from {pickup} to {drop} on {date}"
     }
 
-if __name__ == "__main__":
-    # ✅ Important: run mcp.asgi_app directly
-    uvicorn.run(mcp.asgi_app, host="0.0.0.0", port=8000)
+# if __name__ == "__main__":
+#     # ✅ Important: run mcp.asgi_app directly
+#     uvicorn.run(mcp.asgi_app, host="0.0.0.0", port=8000)
