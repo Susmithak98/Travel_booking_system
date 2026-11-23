@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Travel Booking System · Multi-Agent Live Demo · Susmitha Kotharu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root { --bg:#05060f; --panel:rgba(16,19,42,.6); --border:rgba(140,160,255,.15); --text:#e8ebff; --muted:#9aa1c7;
+    --cyan:#22d3ee; --violet:#a78bfa; --pink:#f472b6; --green:#34d399; --amber:#fbbf24;
+    --grad:linear-gradient(120deg,var(--cyan),var(--violet) 55%,var(--pink)); --mono:"JetBrains Mono",monospace; --sans:"Space Grotesk",system-ui,sans-serif; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:radial-gradient(1000px 700px at 80% 0%,#0f2a3d 0%,var(--bg) 60%) fixed; color:var(--text); font-family:var(--sans); min-height:100vh; }
+  a { color:inherit; text-decoration:none; }
+  header { display:flex; justify-content:space-between; align-items:center; padding:18px 5vw; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:5; background:rgba(5,6,15,.6); backdrop-filter:blur(10px); }
+  .back { font-family:var(--mono); font-size:13px; color:var(--muted); } .back:hover { color:var(--cyan); }
+  .tag { font-family:var(--mono); font-size:12px; padding:5px 12px; border:1px solid var(--border); border-radius:99px; color:var(--green); }
+  .wrap { max-width:1240px; margin:0 auto; padding:36px 5vw 60px; }
+  h1 { font-size:clamp(32px,4.5vw,52px); line-height:1.05; } h1 span { background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .lead { color:var(--muted); max-width:780px; margin:14px 0 8px; font-size:17px; line-height:1.6; }
+  .note { font-family:var(--mono); font-size:12px; color:var(--amber); margin-bottom:26px; }
+  .glass { background:var(--panel); border:1px solid var(--border); border-radius:18px; backdrop-filter:blur(14px); }
+  .card { padding:20px 22px; }
+  .card h3 { font-size:13px; font-family:var(--mono); color:var(--cyan); letter-spacing:.08em; text-transform:uppercase; margin-bottom:14px; }
+  form { display:grid; grid-template-columns:repeat(4,1fr) auto; gap:12px; align-items:end; }
+  @media (max-width:860px) { form { grid-template-columns:1fr 1fr; } }
+  label { font-size:12.5px; color:var(--muted); display:flex; flex-direction:column; gap:6px; }
+  input { background:rgba(255,255,255,.05); border:1px solid var(--border); border-radius:10px; padding:11px 12px; color:var(--text); font:inherit; color-scheme:dark; }
+  input:focus { outline:none; border-color:var(--violet); }
+  .btn { font:inherit; font-weight:600; cursor:pointer; border:0; border-radius:12px; padding:12px 20px; background:var(--grad); color:#07081a; }
+  .btn:disabled { opacity:.5; cursor:wait; }
+  .main { display:grid; grid-template-columns:1fr 1.1fr; gap:22px; margin-top:22px; }
+  @media (max-width:900px) { .main { grid-template-columns:1fr; } }
+  /* graph */
+  .graph { display:flex; flex-direction:column; align-items:center; gap:0; padding:10px 0; }
+  .node { width:min(320px,100%); display:flex; align-items:center; gap:12px; padding:13px 16px; border-radius:14px; border:1px solid var(--border); background:rgba(255,255,255,.03); transition:.3s; }
+  .node .ic { font-size:22px; width:30px; text-align:center; }
+  .node b { display:block; font-size:15px; } .node small { font-family:var(--mono); font-size:11.5px; color:var(--muted); }
+  .node .st { margin-left:auto; font-family:var(--mono); font-size:11px; color:var(--muted); }
+  .node.run { border-color:var(--cyan); box-shadow:0 0 24px rgba(34,211,238,.35); background:rgba(34,211,238,.07); }
+  .node.run .st { color:var(--cyan); }
+  .node.ok { border-color:rgba(52,211,153,.6); } .node.ok .st { color:var(--green); }
+  .edge { width:2px; height:26px; background:linear-gradient(var(--border),var(--border)); position:relative; overflow:hidden; }
+  .edge.flow::after { content:""; position:absolute; left:0; width:2px; height:10px; background:var(--cyan); box-shadow:0 0 8px var(--cyan); animation:flow .5s linear; }
+  @keyframes flow { from { top:-10px; } to { top:26px; } }
+  .term { font-family:var(--mono); font-size:12.5px; line-height:1.6; background:#070815; border:1px solid var(--border); border-radius:12px; padding:14px; height:420px; overflow-y:auto; white-space:pre-wrap; color:#c7cdf3; }
+  .term .k { color:var(--violet); } .term .s { color:var(--green); } .term .c { color:#6b7299; } .term .h { color:var(--cyan); } .term .w { color:var(--amber); }
+  .itin { margin-top:22px; display:none; }
+  .itin.show { display:block; animation:in .5s ease; } @keyframes in { from { opacity:0; transform:translateY(8px); } }
+  .tickets { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; }
+  .ticket { padding:16px; border-radius:14px; border:1px dashed rgba(167,139,250,.45); background:rgba(167,139,250,.06); }
+  .ticket .t { font-size:12px; color:var(--muted); font-family:var(--mono); } .ticket .id { font-family:var(--mono); font-size:20px; color:var(--cyan); margin:4px 0; }
+  .ticket p { font-size:14px; color:#d6dbff; }
+  .about { margin-top:30px; display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px; }
+  .about p, .about li { color:var(--muted); font-size:14.5px; line-height:1.6; } .about ul { padding-left:18px; }
+  .stack { display:flex; flex-wrap:wrap; gap:6px; } .stack span { font-family:var(--mono); font-size:12px; padding:4px 9px; border-radius:7px; background:rgba(255,255,255,.05); color:#c9cff5; }
+  pre.code { font-family:var(--mono); font-size:12px; line-height:1.55; background:#070815; border:1px solid var(--border); border-radius:12px; padding:14px; overflow-x:auto; color:#c7cdf3; }
+</style>
+</head>
+<body>
+<header>
+  <a class="back" href="https://susmithak98.github.io/">← Susmitha Kotharu · Portfolio</a>
+  <span class="tag">● Live demo · Travel_booking_system</span>
+</header>
+<div class="wrap">
+  <h1>Travel Booking — <span>Multi-Agent System</span></h1>
+  <p class="lead">A LangGraph <b>Planner Agent</b> books a full trip by calling <b>MCP tools</b> for flights, hotels and cabs in sequence, then hands the itinerary to a separate FastAPI <b>Confirmation Agent</b>. Enter a trip and watch every agent step, tool call and response.</p>
+  <p class="note">⚡ This demo runs the same graph and tool contracts in your browser. In the repo, the tools run on a FastMCP server (port 8000) and the confirmation agent runs on FastAPI (port 6004).</p>
+
+  <section class="glass card">
+    <h3>Plan a trip</h3>
+    <form id="form">
+      <label>📍 From city<input id="from" value="New York" required /></label>
+      <label>🏙️ To city<input id="to" value="Los Angeles" required /></label>
+      <label>📅 Travel date<input id="date" type="date" required /></label>
+      <label>📅 Checkout date<input id="checkout" type="date" required /></label>
+      <button class="btn" id="go">Run Planner Agent ▶</button>
+    </form>
+  </section>
+
+  <div class="main">
+    <section class="glass card">
+      <h3>LangGraph · StateGraph(TravelState)</h3>
+      <div class="graph">
+        <div class="node" data-n="start"><span class="ic">👤</span><div><b>User input</b><small>client.py</small></div><span class="st">idle</span></div>
+        <div class="edge"></div>
+        <div class="node" data-n="book_flight"><span class="ic">✈️</span><div><b>book_flight</b><small>MCP tool · from_city, to_city, date</small></div><span class="st">idle</span></div>
+        <div class="edge"></div>
+        <div class="node" data-n="book_hotel"><span class="ic">🏨</span><div><b>book_hotel</b><small>MCP tool · city, check_in, check_out</small></div><span class="st">idle</span></div>
+        <div class="edge"></div>
+        <div class="node" data-n="book_cab"><span class="ic">🚖</span><div><b>book_cab</b><small>MCP tool · pickup, drop, date</small></div><span class="st">idle</span></div>
+        <div class="edge"></div>
+        <div class="node" data-n="confirm"><span class="ic">✅</span><div><b>confirm</b><small>POST :6004/confirm · Confirmation Agent</small></div><span class="st">idle</span></div>
+        <div class="edge"></div>
+        <div class="node" data-n="end"><span class="ic">🏁</span><div><b>END</b><small>final TravelState</small></div><span class="st">idle</span></div>
+      </div>
+    </section>
+    <section class="glass card">
+      <h3>Agent trace · MCP calls</h3>
+      <div class="term" id="term"><span class="c"># Press “Run Planner Agent” to start the graph…</span></div>
+    </section>
+  </div>
+
+  <section class="glass card itin" id="itin">
+    <h3>Your confirmed itinerary</h3>
+    <div class="tickets" id="tickets"></div>
+  </section>
+
+  <div class="about">
+    <div class="glass card"><h3>Architecture</h3><ul>
+      <li><b>Planner Agent</b>: a LangGraph StateGraph with typed TravelState, where each node is an async tool call</li>
+      <li><b>MCP Server</b>: FastMCP exposes book_flight, book_hotel and book_cab as tools</li>
+      <li><b>Confirmation Agent</b>: a FastAPI service that receives the bookings and returns a task_id</li>
+      <li><b>Client</b>: a CLI that collects trip details and invokes the graph</li></ul></div>
+    <div class="glass card"><h3>Tech stack</h3><div class="stack"><span>Python</span><span>LangGraph</span><span>Model Context Protocol</span><span>FastMCP</span><span>FastAPI</span><span>httpx</span><span>asyncio</span><span>uvicorn</span><span>Agent-to-agent</span></div></div>
+    <div class="glass card"><h3>Graph definition</h3>
+<pre class="code">graph = StateGraph(TravelState)
+graph.add_node("book_flight", book_flight)
+graph.add_node("book_hotel", book_hotel)
+graph.add_node("book_cab", book_cab)
+graph.add_node("confirm", send_to_confirmation_agent)
+graph.set_entry_point("book_flight")
+graph.add_edge("book_flight", "book_hotel")
+graph.add_edge("book_hotel", "book_cab")
+graph.add_edge("book_cab", "confirm")
+graph.add_edge("confirm", END)
+app = graph.compile()</pre></div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const today = new Date(); const d1 = new Date(today.getTime() + 14 * 864e5), d2 = new Date(today.getTime() + 18 * 864e5);
+const iso = (d) => d.toISOString().slice(0, 10);
+$("date").value = iso(d1); $("checkout").value = iso(d2);
+const rid = (p) => p + Math.floor(100 + Math.random() * 900);
+const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : "xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx".replace(/x/g, () => (Math.random() * 16 | 0).toString(16)));
+const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+
+// MCP tools: same contracts as mcp_tools.py
+const tools = {
+  book_flight: ({ from_city, to_city, date }) => ({ pnr: rid("FL"), details: `Flight booked from ${from_city} to ${to_city} on ${date}` }),
+  book_hotel: ({ city, check_in, check_out }) => ({ reservation_id: rid("HT"), details: `Hotel booked in ${city} from ${check_in} to ${check_out}` }),
+  book_cab: ({ pickup, drop, date }) => ({ cab_id: rid("CB"), details: `Cab from ${pickup} to ${drop} on ${date}` }),
+};
+const term = $("term");
+const log = (html) => { term.insertAdjacentHTML("beforeend", html + "\n"); term.scrollTop = term.scrollHeight; };
+const json = (o) => esc(JSON.stringify(o, null, 2)).replace(/&quot;|"/g, '"').replace(/"([^"]+)":/g, '<span class="k">"$1"</span>:').replace(/: "([^"]*)"/g, ': <span class="s">"$1"</span>');
+const node = (n) => document.querySelector(`.node[data-n="${n}"]`);
+function setNode(n, cls, label) { const el = node(n); el.classList.remove("run", "ok"); if (cls) el.classList.add(cls); el.querySelector(".st").textContent = label; }
+async function flowEdge(n) { const e = node(n).nextElementSibling; if (e && e.classList.contains("edge")) { e.classList.remove("flow"); void e.offsetWidth; e.classList.add("flow"); await sleep(500); } }
+
+async function callTool(name, args, state, key) {
+  setNode(name, "run", "running…");
+  log(`<span class="h">▶ node: ${name}</span>`);
+  log(`<span class="c">  async with ClientSession(endpoint="http://localhost:8000/mcp/tool")</span>`);
+  log(`  → session.call(tool=<span class="s">"${name}"</span>, arguments=${json(args)})`);
+  await sleep(700 + Math.random() * 500);
+  const result = tools[name](args);
+  log(`  ← ${json(result)}`);
+  state[key] = result;
+  setNode(name, "ok", "✓ done"); await flowEdge(name);
+}
+
+$("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const go = $("go"); go.disabled = true; go.textContent = "Running…";
+  document.querySelectorAll(".node").forEach((n) => { n.classList.remove("run", "ok"); n.querySelector(".st").textContent = "idle"; });
+  $("itin").classList.remove("show"); term.innerHTML = "";
+  const state = { from_city: $("from").value.trim(), to_city: $("to").value.trim(), date: $("date").value, checkout_date: $("checkout").value, flight: {}, hotel: {}, cab: {} };
+  if (state.checkout_date <= state.date) { log('<span class="w">⚠ Checkout date must be after the travel date.</span>'); go.disabled = false; go.textContent = "Run Planner Agent ▶"; return; }
+  setNode("start", "run", "input"); log(`<span class="c"># client.py → Planner_agent.app.invoke(user_state)</span>`); log(`TravelState = ${json(state)}`);
+  await sleep(600); setNode("start", "ok", "✓ sent"); await flowEdge("start");
+  await callTool("book_flight", { from_city: state.from_city, to_city: state.to_city, date: state.date }, state, "flight");
+  await callTool("book_hotel", { city: state.to_city, check_in: state.date, check_out: state.checkout_date }, state, "hotel");
+  await callTool("book_cab", { pickup: "Airport", drop: "Hotel", date: state.date }, state, "cab");
+  setNode("confirm", "run", "posting…");
+  log(`<span class="h">▶ node: confirm</span>`); log(`  → httpx.post("http://localhost:6004/confirm", json={flight, hotel, cab})`);
+  await sleep(800);
+  const conf = { task_id: uuid(), status: "ok", result: { message: "All bookings confirmed and sent to user interface.", summary: { flight: state.flight, hotel: state.hotel, cab: state.cab } } };
+  log(`  ← <span class="c">Confirmation Agent (FastAPI)</span> ${json(conf)}`);
+  setNode("confirm", "ok", "✓ confirmed"); await flowEdge("confirm");
+  setNode("end", "ok", "✓ END"); log(`<span class="s">✅ Booking complete! All bookings completed and confirmed.</span>`);
+  $("tickets").innerHTML = [
+    ["✈️ Flight · PNR", state.flight.pnr, state.flight.details],
+    ["🏨 Hotel · Reservation", state.hotel.reservation_id, state.hotel.details],
+    ["🚖 Cab · ID", state.cab.cab_id, state.cab.details],
+    ["✅ Confirmation · task_id", conf.task_id.slice(0, 8) + "…", conf.result.message],
+  ].map(([t, id, p]) => `<div class="ticket"><div class="t">${t}</div><div class="id">${esc(id)}</div><p>${esc(p)}</p></div>`).join("");
+  $("itin").classList.add("show");
+  go.disabled = false; go.textContent = "Run again ▶";
+});
+</script>
+</body>
+</html>

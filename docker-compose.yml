@@ -1,0 +1,23 @@
+services:
+  mcp-tools:
+    build: .
+    command: python mcp_server_demo.py
+    environment: { MCP_HOST: 0.0.0.0, MCP_PORT: "8000" }
+    ports: ["8000:8000"]
+
+  confirmation-agent:
+    build: .
+    command: python conformation_agent.py
+    environment: { CONFIRM_HOST: 0.0.0.0, CONFIRM_PORT: "6004" }
+    ports: ["6004:6004"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:6004/health')"]
+
+  planner:
+    build: .
+    command: python client.py --from "New York" --to "Los Angeles" --date 2026-12-01 --checkout 2026-12-05
+    environment:
+      MCP_URL: http://mcp-tools:8000/mcp
+      CONFIRM_URL: http://confirmation-agent:6004/confirm
+    depends_on: [mcp-tools, confirmation-agent]
+    profiles: [run]

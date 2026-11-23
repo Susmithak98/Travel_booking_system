@@ -1,19 +1,6 @@
-# server.py
-from mcp.server.fastmcp import FastMCP
+"""Start the MCP tool server over streamable HTTP at http://127.0.0.1:8000/mcp"""
+from mcp_tools import MCP_HOST, MCP_PORT, mcp
 
-# Create an MCP server
-mcp = FastMCP("Demo")
-
-
-# Add an addition tool
-@mcp.tool()
-def add(a: int, b: int) -> int:
-    """Add two numbers"""
-    return a + b
-
-
-# Add a dynamic greeting resource
-@mcp.resource("greeting://{name}")
-def get_greeting(name: str) -> str:
-    """Get a personalized greeting"""
-    return f"Hello, {name}!"
+if __name__ == "__main__":
+    print(f"🧰 MCP travel tools running at http://{MCP_HOST}:{MCP_PORT}/mcp")
+    mcp.run(transport="streamable-http")
